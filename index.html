@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User2kTW</title>
+    <title>芫荽網</title>
     <style>
+        @font-face {
+            font-family: 'iansui';
+            src: url('./fonts/Iansui-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'iansui', 'Arial', sans-serif;
             margin: 0;
             padding: 15px;
             background-color: #121212;
@@ -16,16 +23,18 @@
             text-align: center;
             font-size: 20px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
         }
-        .date {
+        .date-time {
             color: #03dac6;
-        }
-        .clock {
-            color: #bb86fc;
+            font-weight: bold;
         }
         .holiday-info {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 20px;
             color: #ff6b6b;
+            font-weight: bold;
         }
         .container {
             display: flex;
@@ -57,6 +66,10 @@
             margin: 0;
             color: #e0e0e0;
             font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         .widget-content {
             display: none;
@@ -76,6 +89,7 @@
             padding: 5px 10px;
             cursor: pointer;
             font-size: 12px;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         .tools, .entertainment {
             display: grid;
@@ -91,6 +105,7 @@
             display: block;
             text-align: center;
             font-size: 14px;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         .tools a:hover, .entertainment a:hover {
             background: #3d3d3d;
@@ -109,6 +124,7 @@
         #todo-list li span {
             color: #e0e0e0;
             font-size: 14px;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         #todo-list li button {
             background: #444;
@@ -118,6 +134,7 @@
             padding: 5px 10px;
             cursor: pointer;
             font-size: 12px;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         #todo-input {
             background: #2d2d2d;
@@ -131,6 +148,7 @@
             font-size: 14px;
             height: 60px;
             resize: none;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         .todo-input-container {
             display: flex;
@@ -144,6 +162,7 @@
             border-radius: 4px;
             padding: 8px 12px;
             font-size: 14px;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         button {
             cursor: pointer;
@@ -181,6 +200,7 @@
             text-decoration: none;
             font-size: 14px;
             display: block;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
         .news-item a:hover {
             color: #e0e0e0;
@@ -190,21 +210,22 @@
             color: #e0e0e0;
             margin-bottom: 8px;
             text-align: center;
+            font-family: 'iansui', 'Arial', sans-serif;
         }
     </style>
 </head>
 <body onclick="resetAllWidgets()">
     <div class="time-info">
-        <span class="date" id="date"></span>
-        <span class="clock" id="clock"></span>
-        <span class="holiday-info" id="holiday-info"></span>
+        <span class="date-time" id="date"></span>
+        <span class="date-time" id="clock"></span>
     </div>
+    <div class="holiday-info" id="holiday-info"></div>
 
     <div class="container" onclick="event.stopPropagation()">
-        <!-- 線上工具 -->
+        <!-- 線上用 -->
         <div class="widget">
             <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
-                <h3>線上工具</h3>
+                <h3>線上用</h3>
                 <button class="toggle-button">▼</button>
             </div>
             <div class="widget-content">
@@ -213,10 +234,10 @@
             </div>
         </div>
 
-        <!-- 娛樂項目 -->
+        <!-- 輕鬆玩 -->
         <div class="widget">
             <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
-                <h3>娛樂項目</h3>
+                <h3>輕鬆玩</h3>
                 <button class="toggle-button">▼</button>
             </div>
             <div class="widget-content">
@@ -225,10 +246,10 @@
             </div>
         </div>
 
-        <!-- 新聞區塊 -->
+        <!-- 看新聞 -->
         <div class="widget">
             <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
-                <h3>有啥新聞</h3>
+                <h3>看新聞</h3>
                 <button class="toggle-button">▼</button>
             </div>
             <div class="widget-content">
@@ -252,15 +273,15 @@
             </div>
         </div>
 
-        <!-- 待辦事項 -->
+        <!-- 留言板 -->
         <div class="widget">
             <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
-                <h3>待辦事項</h3>
+                <h3>留言板</h3>
                 <button class="toggle-button">▼</button>
             </div>
             <div class="widget-content">
                 <div class="todo-input-container">
-                    <textarea id="todo-input" placeholder="輸入待辦事項"></textarea>
+                    <textarea id="todo-input" placeholder="輸入留言"></textarea>
                     <button onclick="addTodo()">新增</button>
                 </div>
                 <ul id="todo-list"></ul>
@@ -294,19 +315,19 @@
                 content.style.display = 'block';
                 button.textContent = '▲';
 
-                if (widget.querySelector('h3').textContent === '新聞') {
+                if (widget.querySelector('h3').textContent === '看新聞') {
                     loadCNANews();
                     loadPTSNews();
                     loadTwReporterNews();
-                } else if (widget.querySelector('h3').textContent === '線上工具') {
+                } else if (widget.querySelector('h3').textContent === '線上用') {
                     loadTools();
-                } else if (widget.querySelector('h3').textContent === '娛樂項目') {
+                } else if (widget.querySelector('h3').textContent === '輕鬆玩') {
                     loadEntertainment();
                 }
             }
         }
 
-        // 加載線上工具
+        // 加載線上用
         function loadTools() {
             const toolsContainer = document.querySelector('.tools');
             toolsContainer.innerHTML = '';
@@ -339,7 +360,7 @@
             });
         }
 
-        // 加載娛樂項目
+        // 加載輕鬆玩
         function loadEntertainment() {
             const entertainmentContainer = document.querySelector('.entertainment');
             entertainmentContainer.innerHTML = '';
@@ -353,7 +374,7 @@
                 { name: '看漫畫', url: 'https://tw.manhuagui.com/', color: '#03dac6' },
                 { name: '妮姬', url: 'https://www.blablalink.com/', color: '#bb86fc' },
                 { name: '棕色塵埃2', url: 'https://webshop.browndust2.global/CT/', color: '#03dac6' },
-                { name: '雙面俄羅斯方塊', url: 'https://unityroom.com/games/uraomo_tetris', color: '#bb86fc' }
+                { name: '雙面Тетрис', url: 'https://unityroom.com/games/uraomo_tetris', color: '#bb86fc' }
             ];
 
             entertainments.forEach((entertainment, index) => {
@@ -529,7 +550,7 @@
         setInterval(updateTimeInfo, 1000);
         updateTimeInfo();
 
-        // 待辦事項
+        // 留言板
         function addTodo() {
             const input = document.getElementById('todo-input');
             const todo = input.value.trim();
