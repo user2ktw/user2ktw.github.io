@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User2kTW</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .time-info {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .date {
+            color: #03dac6;
+        }
+        .clock {
+            color: #bb86fc;
+        }
+        .holiday-info {
+            color: #ff6b6b;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .widget {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            width: 100%;
+        }
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            background: #2d2d2d;
+            margin: -10px -10px 10px -10px;
+        }
+        .widget-header h3 {
+            margin: 0;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+        .widget-content {
+            display: none;
+            padding: 10px;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .widget.active .widget-content {
+            display: block;
+            max-height: 1000px;
+        }
+        .toggle-button {
+            background: #444;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .tools, .entertainment {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .tools a, .entertainment a {
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background: #2d2d2d;
+            display: block;
+            text-align: center;
+            font-size: 14px;
+        }
+        .tools a:hover, .entertainment a:hover {
+            background: #3d3d3d;
+        }
+        #todo-list {
+            list-style: none;
+            padding: 0;
+        }
+        #todo-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+        #todo-list li span {
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        #todo-list li button {
+            background: #444;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        #todo-input {
+            background: #2d2d2d;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            height: 60px;
+            resize: none;
+        }
+        .todo-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #todo-input, button {
+            background: #2d2d2d;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        button {
+            cursor: pointer;
+            background: #444;
+            color: #e0e0e0;
+            border: none;
+            width: auto;
+            white-space: nowrap;
+            height: 40px;
+        }
+        button:hover {
+            background: #555;
+        }
+        .news-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .news-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .news-item-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .news-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            background: #2d2d2d;
+            margin-bottom: 8px;
+        }
+        .news-item a {
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+        }
+        .news-item a:hover {
+            color: #e0e0e0;
+        }
+        .news-title {
+            font-weight: bold;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body onclick="resetAllWidgets()">
+    <div class="time-info">
+        <span class="date" id="date"></span>
+        <span class="clock" id="clock"></span>
+        <span class="holiday-info" id="holiday-info"></span>
+    </div>
+
+    <div class="container" onclick="event.stopPropagation()">
+        <!-- 線上工具 -->
+        <div class="widget">
+            <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
+                <h3>線上工具</h3>
+                <button class="toggle-button">▼</button>
+            </div>
+            <div class="widget-content">
+                <div class="tools">
+                </div>
+            </div>
+        </div>
+
+        <!-- 娛樂項目 -->
+        <div class="widget">
+            <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
+                <h3>娛樂項目</h3>
+                <button class="toggle-button">▼</button>
+            </div>
+            <div class="widget-content">
+                <div class="entertainment">
+                </div>
+            </div>
+        </div>
+
+        <!-- 新聞區塊 -->
+        <div class="widget">
+            <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
+                <h3>有啥新聞</h3>
+                <button class="toggle-button">▼</button>
+            </div>
+            <div class="widget-content">
+                <div class="news-container">
+                    <!-- 中央通訊社 -->
+                    <div class="news-column">
+                        <div class="news-title">中央通訊社</div>
+                        <div class="news-item-container" id="cna-news-container"></div>
+                    </div>
+                    <!-- 公視新聞網 -->
+                    <div class="news-column">
+                        <div class="news-title">公視新聞網</div>
+                        <div class="news-item-container" id="pts-news-container"></div>
+                    </div>
+                    <!-- 報導者 -->
+                    <div class="news-column">
+                        <div class="news-title">報導者</div>
+                        <div class="news-item-container" id="twreporter-news-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 待辦事項 -->
+        <div class="widget">
+            <div class="widget-header" onclick="event.stopPropagation(); toggleWidget(this)">
+                <h3>待辦事項</h3>
+                <button class="toggle-button">▼</button>
+            </div>
+            <div class="widget-content">
+                <div class="todo-input-container">
+                    <textarea id="todo-input" placeholder="輸入待辦事項"></textarea>
+                    <button onclick="addTodo()">新增</button>
+                </div>
+                <ul id="todo-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 重設所有區塊到預設狀態
+        function resetAllWidgets() {
+            document.querySelectorAll('.widget').forEach(widget => {
+                widget.classList.remove('active');
+                widget.querySelector('.widget-content').style.display = 'none';
+                widget.querySelector('.toggle-button').textContent = '▼';
+            });
+        }
+
+        // 展開/收起欄目
+        function toggleWidget(header) {
+            const widget = header.parentElement;
+            const content = widget.querySelector('.widget-content');
+            const button = header.querySelector('.toggle-button');
+
+            if (widget.classList.contains('active')) {
+                widget.classList.remove('active');
+                content.style.display = 'none';
+                button.textContent = '▼';
+            } else {
+                resetAllWidgets();
+                widget.classList.add('active');
+                content.style.display = 'block';
+                button.textContent = '▲';
+
+                if (widget.querySelector('h3').textContent === '新聞') {
+                    loadCNANews();
+                    loadPTSNews();
+                    loadTwReporterNews();
+                } else if (widget.querySelector('h3').textContent === '線上工具') {
+                    loadTools();
+                } else if (widget.querySelector('h3').textContent === '娛樂項目') {
+                    loadEntertainment();
+                }
+            }
+        }
+
+        // 加載線上工具
+        function loadTools() {
+            const toolsContainer = document.querySelector('.tools');
+            toolsContainer.innerHTML = '';
+
+            const tools = [
+                { name: 'Gmail', url: 'https://mail.google.com/', color: '#bb86fc' },
+                { name: '日曆', url: 'https://calendar.google.com/', color: '#03dac6' },
+                { name: 'Twitter', url: 'https://twitter.com/', color: '#bb86fc' },
+                { name: 'Keeps 記事', url: 'https://keep.google.com/', color: '#03dac6' },
+                { name: '雲端硬碟', url: 'https://drive.google.com/', color: '#bb86fc' },
+                { name: 'Threads', url: 'https://www.threads.net/', color: '#03dac6' },
+                { name: '地圖', url: 'https://www.google.com/maps', color: '#bb86fc' },
+                { name: '遠端桌面', url: 'https://remotedesktop.google.com/access/', color: '#03dac6' },
+                { name: 'Bluesky', url: 'https://bsky.app/', color: '#bb86fc' },
+                { name: 'Photopea', url: 'https://www.photopea.com/', color: '#03dac6' },
+                { name: '饅頭工具箱', url: 'https://tools.mant0u.com/', color: '#bb86fc' },
+                { name: 'Plurk', url: 'https://www.plurk.com/', color: '#03dac6' },
+                { name: 'Pikimov', url: 'https://pikimov.com/app/', color: '#bb86fc' },
+                { name: 'HackMD', url: 'https://hackmd.io/', color: '#03dac6' },
+                { name: 'Discord', url: 'https://discord.com/channels/@me', color: '#bb86fc' }
+            ];
+
+            tools.forEach((tool, index) => {
+                const toolElement = document.createElement('a');
+                toolElement.href = tool.url;
+                toolElement.target = '_blank';
+                toolElement.textContent = tool.name;
+                toolElement.style.color = tool.color;
+                toolsContainer.appendChild(toolElement);
+            });
+        }
+
+        // 加載娛樂項目
+        function loadEntertainment() {
+            const entertainmentContainer = document.querySelector('.entertainment');
+            entertainmentContainer.innerHTML = '';
+
+            const entertainments = [
+                { name: 'YouTube', url: 'https://www.youtube.com/', color: '#bb86fc' },
+                { name: 'Spotify', url: 'https://open.spotify.com/', color: '#03dac6' },
+                { name: 'L.N.P', url: 'https://portaly.cc/LNProject', color: '#bb86fc' },
+                { name: 'Twitch', url: 'https://www.twitch.tv/', color: '#03dac6' },
+                { name: '街聲', url: 'https://streetvoice.com/', color: '#bb86fc' },
+                { name: '看漫畫', url: 'https://tw.manhuagui.com/', color: '#03dac6' },
+                { name: '妮姬', url: 'https://www.blablalink.com/', color: '#bb86fc' },
+                { name: '棕色塵埃2', url: 'https://webshop.browndust2.global/CT/', color: '#03dac6' },
+                { name: '雙面俄羅斯方塊', url: 'https://unityroom.com/games/uraomo_tetris', color: '#bb86fc' }
+            ];
+
+            entertainments.forEach((entertainment, index) => {
+                const entertainmentElement = document.createElement('a');
+                entertainmentElement.href = entertainment.url;
+                entertainmentElement.target = '_blank';
+                entertainmentElement.textContent = entertainment.name;
+                entertainmentElement.style.color = entertainment.color;
+                entertainmentContainer.appendChild(entertainmentElement);
+            });
+        }
+
+        // 加載中央通訊社新聞
+        function loadCNANews() {
+            const newsContainer = document.getElementById('cna-news-container');
+            newsContainer.innerHTML = '<div class="news-item">正在加載新聞...</div>';
+
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https://feedx.net/rss/cna.xml')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        newsContainer.innerHTML = '';
+                        data.items.slice(0, 10).forEach((item, index) => {
+                            const newsItem = document.createElement('div');
+                            newsItem.className = 'news-item';
+                            newsItem.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a>`;
+                            newsItem.querySelector('a').style.color = index % 2 === 0 ? '#bb86fc' : '#03dac6';
+                            newsContainer.appendChild(newsItem);
+                        });
+                    } else {
+                        throw new Error('Failed to fetch news');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching CNA news:', error);
+                    newsContainer.innerHTML = '<div class="news-item"><a href="https://www.cna.com.tw/" target="_blank">無法加載新聞，請點擊前往中央通訊社網站</a></div>';
+                });
+        }
+
+        // 加載公視新聞網新聞
+        function loadPTSNews() {
+            const newsContainer = document.getElementById('pts-news-container');
+            newsContainer.innerHTML = '<div class="news-item">正在加載新聞...</div>';
+
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https://about.pts.org.tw/rss/XML/newsfeed.xml')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        newsContainer.innerHTML = '';
+                        data.items.slice(0, 10).forEach((item, index) => {
+                            const newsItem = document.createElement('div');
+                            newsItem.className = 'news-item';
+                            newsItem.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a>`;
+                            newsItem.querySelector('a').style.color = index % 2 === 0 ? '#03dac6' : '#bb86fc';
+                            newsContainer.appendChild(newsItem);
+                        });
+                    } else {
+                        throw new Error('Failed to fetch news');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching PTS news:', error);
+                    newsContainer.innerHTML = '<div class="news-item"><a href="https://news.pts.org.tw/" target="_blank">無法加載新聞，請點擊前往公視新聞網站</a></div>';
+                });
+        }
+
+        // 加載報導者新聞
+        function loadTwReporterNews() {
+            const newsContainer = document.getElementById('twreporter-news-container');
+            newsContainer.innerHTML = '<div class="news-item">正在加載新聞...</div>';
+
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.twreporter.org/a/rss2.xml')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        newsContainer.innerHTML = '';
+                        data.items.slice(0, 10).forEach((item, index) => {
+                            const newsItem = document.createElement('div');
+                            newsItem.className = 'news-item';
+                            newsItem.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a>`;
+                            newsItem.querySelector('a').style.color = index % 2 === 0 ? '#bb86fc' : '#03dac6';
+                            newsContainer.appendChild(newsItem);
+                        });
+                    } else {
+                        throw new Error('Failed to fetch news');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching TwReporter news:', error);
+                    newsContainer.innerHTML = '<div class="news-item"><a href="https://www.twreporter.org/" target="_blank">無法加載新聞，請點擊前往報導者網站</a></div>';
+                });
+        }
+
+        // 更新時間和連假資訊
+        function updateTimeInfo() {
+            const now = new Date();
+            const year = now.getFullYear().toString().slice(-2);
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const daysOfWeek = ['日', '一', '二', '三', '四', '五', '六'];
+            const dayOfWeek = daysOfWeek[now.getDay()];
+            document.getElementById('date').textContent = `${year}-${month}-${day}(${dayOfWeek}) `;
+
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = ` ${hours}:${minutes}:${seconds} `;
+
+            const holidayInfo = getHolidayInfo(now);
+            document.getElementById('holiday-info').textContent = holidayInfo;
+        }
+
+        // 連假資訊
+        function getHolidayInfo(now) {
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+
+            const holidays = [
+                { start: '2026-01-01', end: '2026-01-03', name: '元旦' },
+                { start: '2026-02-11', end: '2026-02-16', name: '春節' },
+                { start: '2026-04-03', end: '2026-04-06', name: '清明節' },
+                { start: '2026-06-14', end: '2026-06-14', name: '端午節' },
+                { start: '2026-09-21', end: '2026-09-21', name: '中秋節' },
+                { start: '2026-10-10', end: '2026-10-10', name: '雙十節' }
+            ];
+
+            const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+            for (const holiday of holidays) {
+                const startDate = new Date(holiday.start);
+                const endDate = new Date(holiday.end);
+                const currentDate = new Date(todayStr);
+
+                if (currentDate >= startDate && currentDate <= endDate) {
+                    return ` 今日為 ${holiday.name}`;
+                }
+            }
+
+            const nowDate = new Date(todayStr);
+            let nextHoliday = null;
+
+            for (const holiday of holidays) {
+                const startDate = new Date(holiday.start);
+                if (startDate > nowDate) {
+                    nextHoliday = holiday;
+                    break;
+                }
+            }
+
+            if (nextHoliday) {
+                const startDate = new Date(nextHoliday.start);
+                const endDate = new Date(nextHoliday.end);
+                const startMonth = startDate.getMonth() + 1;
+                const startDay = startDate.getDate();
+                const endMonth = endDate.getMonth() + 1;
+                const endDay = endDate.getDate();
+
+                const daysOfWeek = ['日', '一', '二', '三', '四', '五', '六'];
+                const startDayOfWeek = daysOfWeek[startDate.getDay()];
+                const endDayOfWeek = daysOfWeek[endDate.getDay()];
+
+                if (nextHoliday.start === nextHoliday.end) {
+                    return ` 下次連假：${startMonth}/${startDay}(${startDayOfWeek}) ${nextHoliday.name}`;
+                } else {
+                    return ` 下次連假：${startMonth}/${startDay}(${startDayOfWeek})~${endMonth}/${endDay}(${endDayOfWeek}) ${nextHoliday.name}`;
+                }
+            }
+
+            return '';
+        }
+
+        setInterval(updateTimeInfo, 1000);
+        updateTimeInfo();
+
+        // 待辦事項
+        function addTodo() {
+            const input = document.getElementById('todo-input');
+            const todo = input.value.trim();
+            if (todo) {
+                const list = document.getElementById('todo-list');
+                const item = document.createElement('li');
+
+                const span = document.createElement('span');
+                span.textContent = todo;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '刪除';
+                deleteButton.onclick = function(event) {
+                    event.stopPropagation();
+                    item.remove();
+                    saveTodos();
+                };
+
+                item.appendChild(span);
+                item.appendChild(deleteButton);
+                list.appendChild(item);
+
+                input.value = '';
+                saveTodos();
+            }
+        }
+
+        function saveTodos() {
+            const todos = [];
+            document.querySelectorAll('#todo-list li span').forEach(span => {
+                todos.push(span.textContent);
+            });
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        function loadTodos() {
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            const list = document.getElementById('todo-list');
+            todos.forEach(todo => {
+                const item = document.createElement('li');
+
+                const span = document.createElement('span');
+                span.textContent = todo;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '刪除';
+                deleteButton.onclick = function(event) {
+                    event.stopPropagation();
+                    item.remove();
+                    saveTodos();
+                };
+
+                item.appendChild(span);
+                item.appendChild(deleteButton);
+                list.appendChild(item);
+            });
+        }
+        loadTodos();
+    </script>
+</body>
+</html>
